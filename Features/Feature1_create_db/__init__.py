@@ -1,7 +1,7 @@
 """
 Feature 1 — Create DB
 __init__.py — Orchestrates the end-to-end flow for the "Create Database Schema" feature.
-======================
+
 
 Entry point:  run_feature_1(workspace) -> Workspace
 
@@ -15,27 +15,14 @@ from __future__ import annotations
 
 from shared.workspace import Workspace, WorkspaceState
 
-from .agents import (
-    run_requirement_analyzer,
-    run_suggestion_agent,
-    run_schema_designer,
-    run_validation_agent,
-    run_query_generator,
-    run_plan_modifier,
-)
+from .agents import ( run_requirement_analyzer, run_suggestion_agent, run_schema_designer,run_validation_agent,run_query_generator,run_plan_modifier,)
 
-from .utils import (
-    create_sqlite_database,
-    generate_final_report,
-    build_erd_html_from_schema,
-)
+from .utils import (create_sqlite_database, generate_final_report,build_erd_html_from_schema,)
 
 from .validators import production_validation
 
 
-# ─────────────────────────────────────────────
 # Helper
-# ─────────────────────────────────────────────
 
 def _last_user_message(workspace: Workspace) -> str:
     for entry in reversed(workspace.history):
@@ -44,9 +31,7 @@ def _last_user_message(workspace: Workspace) -> str:
     return workspace.user_input or ""
 
 
-# ─────────────────────────────────────────────
 # Phase 1 — Pre approval
-# ─────────────────────────────────────────────
 
 def run_feature_1_pre(workspace: Workspace) -> Workspace:
     prompt = _last_user_message(workspace)
@@ -65,9 +50,7 @@ def run_feature_1_pre(workspace: Workspace) -> Workspace:
     return workspace
 
 
-# ─────────────────────────────────────────────
 # Modify suggestion plan
-# ─────────────────────────────────────────────
 
 def modify_feature_1_plan(workspace: Workspace) -> Workspace:
     from .models import SuggestionPlan, RequirementAnalysis
@@ -94,9 +77,7 @@ def modify_feature_1_plan(workspace: Workspace) -> Workspace:
     return workspace
 
 
-# ─────────────────────────────────────────────
 # Phase 2 — Post approval
-# ─────────────────────────────────────────────
 
 def run_feature_1_post(workspace: Workspace) -> Workspace:
     from .models import SuggestionPlan, RequirementAnalysis
@@ -111,13 +92,13 @@ def run_feature_1_post(workspace: Workspace) -> Workspace:
 
     prompt = workspace.user_input or "db_design"
 
-    # ── Schema design ─────────────────────────────
+    #  Schema design 
     schema = run_schema_designer(suggestion_plan)
 
-    # ── Fast rule-based validation ────────────────
+    #  Fast rule-based validation 
     schema, _ = production_validation(suggestion_plan, schema)
 
-    # ── LLM validation ────────────────────────────
+    #  LLM validation 
     domain = requirement_analysis.domain or "unknown"
 
     validation_result = run_validation_agent(schema, domain=domain)
@@ -125,16 +106,16 @@ def run_feature_1_post(workspace: Workspace) -> Workspace:
     if validation_result and validation_result.corrected_schema:
         schema = validation_result.corrected_schema
 
-    # ── Query generation ──────────────────────────
+    #  Query generation 
     query_set = run_query_generator(schema)
 
-    # ── DB creation ───────────────────────────────
+    #  DB creation 
     db_local_path, sql_schema = create_sqlite_database(schema, prompt)
 
-    # ── ERD generation ────────────────────────────
+    #  ERD generation 
     erd_html = build_erd_html_from_schema(schema)
 
-    # ── Final report ──────────────────────────────
+    #  Final report 
     report = generate_final_report(
         session_id=workspace.workspace_id,
         user_input=prompt,
@@ -145,7 +126,7 @@ def run_feature_1_post(workspace: Workspace) -> Workspace:
         query_set=query_set,
     )
 
-    # ── Write flat workspace outputs ──────────────
+    #  Write flat workspace outputs 
     workspace.schema_json = schema.model_dump()
     workspace.schema_ddl = sql_schema
     workspace.db_local_path = db_local_path
@@ -161,9 +142,7 @@ def run_feature_1_post(workspace: Workspace) -> Workspace:
     return workspace
 
 
-# ─────────────────────────────────────────────
 # Main entry
-# ─────────────────────────────────────────────
 
 def run_feature_1(workspace: Workspace) -> Workspace:
     status = workspace.approval_status
