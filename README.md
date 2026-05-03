@@ -84,7 +84,7 @@ shared/
 ```
 
 # 🔄 System Flow
-\`\`\`text
+```text
 
 User Input (UI)
       ↓
@@ -101,8 +101,7 @@ Execution (SQLite)
 Results + NL Response
       ↓
 Persist to Blob Storage
-
-\`\`\`
+```
 
 # ⚙️ Tech Stack
 Python
@@ -118,52 +117,51 @@ SQL validation pipelines
 # ⚡ Setup
 
 ## 1) Clone repository
-\`\`\`bash
+```bash
 
 git clone https://github.com/your-username/DB-Studio.git
 cd DB-Studio
-\`\`\`
+```
 
 ## 2) Create virtual environment
 
-\`\`\`
+``` bash
 python3 -m venv .venv
 source .venv/bin/activate
-\`\`\`
+```
 
 For Windows:
 
-\`\`\`bash
+```bash
 .venv\Scripts\activate
-\`\`\`
+```
 
 ## 3. Install dependencies
 
-\`\`\`bash
+```bash
 pip install -r requirements.txt
-\`\`\`
+```
 
 ## 4. Configure environment variables
 
-Create a `.env` file:
+Copy the example environment file:
 
-\`\`\`env
-AZURE_OPENAI_ENDPOINT=
-AZURE_OPENAI_API_KEY=
-AZURE_OPENAI_API_VERSION=2024-05-01-preview
-AZURE_OPENAI_DEPLOYMENT=
-AZURE_OPENAI_EMBEDDING_DEPLOYMENT=
+```bash
+cp .env.example .env
+```
 
-AZURE_STORAGE_CONNECTION_STRING=
-BLOB_CONTAINER_ACTIVE=
-WORKSPACE_CONTAINER=
-\`\`\`
+Then open `.env` and fill in your credentials:
+
+- Azure OpenAI credentials  
+- Azure Blob Storage credentials  
+- deployment names  
+- required environment variables
 
 ## 5. Run the application
 
-\`\`\`bash
+```bash
 streamlit run app.py
-\`\`\`
+```
 
 ---
 
@@ -171,19 +169,19 @@ streamlit run app.py
 
 ### Input
 
-\`\`\`text
+```text
 Show top selling products
-\`\`\`
+```
 
 ### Pipeline
 
-\`\`\`text
+```text
 NL Query
 → SQL Generation
 → Validation
 → Execution
 → Response
-\`\`\`
+```
 
 ### Output
 
@@ -195,7 +193,7 @@ NL Query
 
 # 🗂️ Project Structure
 
-\`\`\`bash
+```bash
 DB-Studio/
 ├── app.py
 ├── feature1_app.py
@@ -214,7 +212,7 @@ DB-Studio/
 
 ├── requirements.txt
 └── README.md
-\`\`\`
+```
 
 ---
 
