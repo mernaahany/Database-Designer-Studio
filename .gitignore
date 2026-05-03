@@ -1,0 +1,32 @@
+.env
+venv/
+__pycache__/
+.env
+venv/
+__pycache__/
+*.pyc
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Env
+.env
+.venv/
+
+# OS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Streamlit
+.streamlit/
+
+# logs
+*.log
+
+output/
