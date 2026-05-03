@@ -173,7 +173,3 @@ streamlit run app.py
   - Enter: "Find customers who rented from both stores"
   - The pipeline: UI → `run_feature_3_pipeline` → `run_query_agent` → (clarify/approve?) → `execute_query_result` → `generate_nl_response` → workspace updated with `feature3_data` (SQL, rows, nl_response, trace).
 
-## Final notes
-- The README now includes the repository structure and more granular pointers to where features and agents live. If you want, I can also:
-  - add a small `DEV.md` with common dev commands, or
-  - create an `.env.example` file populated from `shared/config.py` aliases.
