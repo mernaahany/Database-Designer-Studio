@@ -513,12 +513,7 @@ def render_schema_created_phase(ws: Workspace) -> None:
     render_suggestion_phase(ws)
 
 
-# DB ready phase — routes to modify or chat based on entry_mode
-# Upload phase — INLINE, no import from feature2_app
-# Called when entry_mode == "upload".
-# Ingests a .db/.sqlite file → uploads blob → extracts schema →
-# transitions to DB_READY so the user can pick Modify or Chat.
-# ─────────────────────────────────────────────────────────────
+# Upload phase — upload file, show info card, then ingest and route to modify phase, or back to entry if canceled
 
 def render_upload_phase(ws: Workspace) -> None:
     st.markdown("## 📂 Upload Your Database")

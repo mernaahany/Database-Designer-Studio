@@ -1,17 +1,6 @@
 """
 feature1_app.py — Feature 1: Create DB (UI layer)
-==================================================
-Changes from original:
-  1. ERD rendering now uses shared.erd.data.extract_erd_data +
-     shared.erd.renderer.render_erd_html instead of the old
-     build_erd_html_from_plan / build_erd_html_from_schema (pyvis).
-  2. _upload_feature_1_artifacts() is called immediately after the
-     post-approval pipeline completes, so the .db and ERD are in
-     blob storage before the workspace is saved and rerun fires.
-  3. Added PDF report generation for validation results.
 
-Everything else — CSS, helpers, phase routing, layout, button
-behaviour — is unchanged from the original.
 """
 from __future__ import annotations
 
@@ -29,40 +18,29 @@ try:
 except ImportError:
     pass
 
-# ── Shared layer ──────────────────────────────────────────────
 from shared.workspace import Workspace, WorkspaceState
 from shared.blob_storage import save_workspace, load_workspace, upload_to_blob
 
-# ── NEW: shared ERD pipeline (data.py + renderer.py) ─────────
 from shared.erd.data import extract_erd_data
 from shared.erd.renderer import render_erd_html
 
-# ── PDF Report Generator ──────────────────────────────────────
 from shared.pdf_report import generate_validation_pdf
 
-# ── Feature 1 orchestration ───────────────────────────────────
 from Features.Feature1_create_db import run_feature_1
 
-# ── Feature 1 models (rehydration only) ──────────────────────
 from Features.Feature1_create_db.models import (
     SuggestionPlan,
     DatabaseSchema,
     ValidationResult,
     QuerySet,
 )
-
-# ── Feature 1 utils — keep generate_sqlite_ddl for DDL tab ───
-# build_erd_html_from_plan / build_erd_html_from_schema removed;
-# ERD is now handled by extract_erd_data + render_erd_html above.
 from Features.Feature1_create_db.utils import generate_sqlite_ddl
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# ─────────────────────────────────────────────────────────────
-# CSS  (unchanged)
-# ─────────────────────────────────────────────────────────────
+# CSS 
 
 st.markdown("""
 <style>
@@ -131,9 +109,7 @@ hr { border-color: rgba(79,195,247,0.15) !important; margin: 1.5rem 0 !important
 """, unsafe_allow_html=True)
 
 
-# ─────────────────────────────────────────────────────────────
-# Workspace helpers  (unchanged)
-# ─────────────────────────────────────────────────────────────
+# Workspace helpers 
 
 def get_or_create_workspace() -> Workspace:
     if "workspace_id" not in st.session_state:
@@ -159,9 +135,9 @@ def clear_workspace() -> None:
     st.session_state["workspace"]    = Workspace(workspace_id=new_id)
 
 
-# ─────────────────────────────────────────────────────────────
-# Blob upload  (enhanced with PDF report generation)
-# ─────────────────────────────────────────────────────────────
+
+# Blob upload with local fallback and PDF report generation
+
 
 def _upload_feature_1_artifacts(ws: Workspace) -> Workspace:
     """
@@ -190,7 +166,7 @@ def _upload_feature_1_artifacts(ws: Workspace) -> Workspace:
         except Exception as e:
             logger.warning("ERD blob upload failed: %s", e)
 
-    # ── NEW: Generate and upload PDF validation report ───────
+    #  NEW: Generate and upload PDF validation report 
     if ws.validation_result and ws.schema_json:
         try:
             validation = _validation_from_workspace(ws)
@@ -216,9 +192,8 @@ def _upload_feature_1_artifacts(ws: Workspace) -> Workspace:
     return ws
 
 
-# ─────────────────────────────────────────────────────────────
-# Rehydration helpers  (unchanged)
-# ─────────────────────────────────────────────────────────────
+# Rehydration helpers  
+
 
 def _plan_from_workspace(ws: Workspace) -> SuggestionPlan | None:
     if not ws.suggestion_plan:
@@ -260,9 +235,7 @@ def _queries_from_workspace(ws: Workspace) -> QuerySet | None:
         return None
 
 
-# ─────────────────────────────────────────────────────────────
-# ERD helpers  — NEW: use extract_erd_data + render_erd_html
-# ─────────────────────────────────────────────────────────────
+# ERD helpers  
 
 def _render_erd(source: SuggestionPlan | DatabaseSchema, height: int = 600) -> None:
     """
@@ -279,9 +252,7 @@ def _render_erd(source: SuggestionPlan | DatabaseSchema, height: int = 600) -> N
         st.warning(f"ERD could not be rendered: {exc}")
 
 
-# ─────────────────────────────────────────────────────────────
-# Sidebar  (unchanged)
-# ─────────────────────────────────────────────────────────────
+# Sidebar  
 
 def render_sidebar(ws: Workspace) -> None:
     with st.sidebar:
@@ -296,9 +267,7 @@ def render_sidebar(ws: Workspace) -> None:
             st.rerun()
 
 
-# ─────────────────────────────────────────────────────────────
 # Phase 1 — Input
-# ─────────────────────────────────────────────────────────────
 
 def render_input_phase(ws: Workspace) -> None:
     st.markdown("## 🧠 Describe Your Database Requirements")
@@ -360,9 +329,7 @@ def render_input_phase(ws: Workspace) -> None:
                 logger.exception("Feature 1 pre-approval pipeline failed")
 
 
-# ─────────────────────────────────────────────────────────────
 # Phase 2 — Suggestion review
-# ─────────────────────────────────────────────────────────────
 
 def render_suggestion_phase(ws: Workspace) -> None:
     plan = _plan_from_workspace(ws)
@@ -380,7 +347,7 @@ def render_suggestion_phase(ws: Workspace) -> None:
 
     col_plan, col_erd = st.columns([1.1, 0.9], gap="large")
 
-    # ── Plan detail ───────────────────────────────────────────
+    #  Plan detail 
     with col_plan:
         st.markdown("### Suggested Design")
 
@@ -433,20 +400,20 @@ def render_suggestion_phase(ws: Workspace) -> None:
             with st.expander("Design Rationale", expanded=False):
                 st.write(plan.rationale)
 
-    # ── ERD preview — NEW renderer ────────────────────────────
+    #  ERD preview — renderer 
     with col_erd:
         st.markdown("### Live ERD Preview")
         st.caption("Drag nodes to rearrange · scroll to zoom.")
         _render_erd(plan, height=560)
 
-    # ── Metrics row ───────────────────────────────────────────
+    #  Metrics row 
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Entities",          len(plan.suggested_entities))
     m2.metric("Relationships",     len(plan.suggested_relationships))
     m3.metric("Attributes",        sum(len(e.attributes) for e in plan.suggested_entities))
     m4.metric("Optional Features", len(plan.optional_features))
 
-    # ── Modify plan ───────────────────────────────────────────
+    #  Modify plan 
     st.markdown("### Modify Plan")
     modify_instruction = st.text_input(
         "Tell DB Studio what to change",
@@ -469,7 +436,7 @@ def render_suggestion_phase(ws: Workspace) -> None:
                     st.error(f"Modification failed: {exc}")
                     logger.exception("Feature 1 plan modification failed")
 
-    # ── Approval ──────────────────────────────────────────────
+    #  Approval 
     st.markdown("### Your Decision")
     st.warning("Approve when the entities, relationships, and optional features look right.")
 
@@ -496,9 +463,7 @@ def render_suggestion_phase(ws: Workspace) -> None:
             st.rerun()
 
 
-# ─────────────────────────────────────────────────────────────
 # Phase 3 — Results
-# ─────────────────────────────────────────────────────────────
 
 def render_results_phase(ws: Workspace) -> None:
     schema     = _schema_from_workspace(ws)
@@ -511,7 +476,7 @@ def render_results_phase(ws: Workspace) -> None:
         "You can now modify it or chat with it."
     )
 
-    # ── Metrics ───────────────────────────────────────────────
+    #  Metrics 
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Tables",           len(schema.tables) if schema else 0)
     c2.metric("Columns",          sum(len(t.columns) for t in schema.tables) if schema else 0)
@@ -525,12 +490,11 @@ def render_results_phase(ws: Workspace) -> None:
         ) if queries else 0,
     )
 
-    # ── Downloads (enhanced with PDF report) ─────────────────
+    #  Downloads ( with PDF report) 
     dl_db, dl_sql, dl_pdf = st.columns(3)
 
     with dl_db:
-        # db_local_path was cleared after blob upload;
-        # if blob upload failed it was left as fallback
+
         local = ws.db_local_path
         if local and os.path.exists(local):
             with open(local, "rb") as fh:
@@ -555,7 +519,7 @@ def render_results_phase(ws: Workspace) -> None:
                 use_container_width=True,
             )
 
-    # ── NEW: PDF Report Download ──────────────────────────────
+    #  PDF Report Download 
     with dl_pdf:
         if validation and schema:
             # Check if PDF already exists in blob storage
@@ -591,7 +555,7 @@ def render_results_phase(ws: Workspace) -> None:
                         st.error(f"Failed to generate PDF: {e}")
                         logger.exception("PDF generation failed")
 
-    # ── Tabs ──────────────────────────────────────────────────
+    #  Tabs 
     tab_erd, tab_schema, tab_sql, tab_validation, tab_queries = st.tabs(
         ["📊 ERD", "🗄 Schema", "📝 SQL DDL", "🔬 Validation", "🔍 Queries"]
     )
@@ -693,7 +657,7 @@ def render_results_phase(ws: Workspace) -> None:
                 else:
                     st.info("No analytical queries were generated for this schema.")
 
-    # ── Navigation ────────────────────────────────────────────
+    #  Navigation 
     st.markdown("---")
     col_modify, col_chat, col_new = st.columns(3)
 
@@ -716,9 +680,8 @@ def render_results_phase(ws: Workspace) -> None:
             st.rerun()
 
 
-# ─────────────────────────────────────────────────────────────
-# Router  (unchanged)
-# ─────────────────────────────────────────────────────────────
+
+# Router for workspace states
 
 def main() -> None:
     ws = get_or_create_workspace()

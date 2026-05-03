@@ -566,8 +566,7 @@ def _render_erd_tab(ws: Workspace) -> None:
             erd_data = extract_erd_data(ws.db_blob_name)
 
         except FileNotFoundError:
-            # Blob not found — likely Feature 1 created the DB locally
-            # but it hasn't been synced to the active blob container yet.
+          
             st.warning(
                 f"⚠️ Database blob `{ws.db_blob_name}` is not yet in cloud storage.\n\n"
                 "This usually means the database was created in this session but hasn't "
