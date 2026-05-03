@@ -64,12 +64,7 @@ def save_workspace(ws: Workspace) -> None:
             blob_name = str(blob_name)
         if not blob_name or not blob_name.strip():
             raise ValueError("blob_name must be a non-empty string")
-        logger.error(
-            "blob_name debug -> type=%s len=%s value=%s",
-            type(blob_name).__name__,
-            len(str(blob_name)) if blob_name is not None else None,
-            repr(blob_name),
-        )
+        
         container.upload_blob(
             blob_name,
             ws.model_dump_json(),
@@ -108,12 +103,7 @@ def load_workspace(workspace_id: str) -> Workspace:
             blob_name = str(blob_name)
         if not blob_name or not blob_name.strip():
             raise ValueError("blob_name must be a non-empty string")
-        logger.error(
-            "blob_name debug -> type=%s len=%s value=%s",
-            type(blob_name).__name__,
-            len(str(blob_name)) if blob_name is not None else None,
-            repr(blob_name),
-        )
+        
         blob = client.get_blob_client(
             WORKSPACE_CONTAINER,
             blob_name,
@@ -140,12 +130,7 @@ def upload_to_blob(file_bytes: bytes, path: str) -> str:
         if not blob_name or not blob_name.strip():
             raise ValueError("blob_name must be a non-empty string")
         logger.info("Uploading blob: container=%s path=%s", BLOB_CONTAINER_ACTIVE, blob_name)
-        logger.error(
-            "blob_name debug -> type=%s len=%s value=%s",
-            type(blob_name).__name__,
-            len(str(blob_name)) if blob_name is not None else None,
-            repr(blob_name),
-        )
+        
         blob = client.get_blob_client(BLOB_CONTAINER_ACTIVE, blob_name)
         blob.upload_blob(file_bytes, overwrite=True)
         return blob.url
@@ -165,12 +150,7 @@ def upload_db(db_bytes: bytes, blob_name: str) -> str:
             raise ValueError("blob_name must be a non-empty string")
         logger.info("Uploading database blob: container=%s blob_name=%s", BLOB_CONTAINER_ACTIVE, blob_name)
         container = _ensure_container(client, BLOB_CONTAINER_ACTIVE)
-        logger.error(
-            "blob_name debug -> type=%s len=%s value=%s",
-            type(blob_name).__name__,
-            len(str(blob_name)) if blob_name is not None else None,
-            repr(blob_name),
-        )
+        
         blob = container.get_blob_client(blob_name)
         blob.upload_blob(db_bytes, overwrite=True)
         return blob_name
@@ -227,12 +207,7 @@ def get_blob_url(blob_name: str) -> str:
         raise ValueError("blob_name must be a non-empty string")
     logger.info("Resolving blob URL: container=%s blob_name=%s", BLOB_CONTAINER_ACTIVE, blob_name)
     container = _ensure_container(client, BLOB_CONTAINER_ACTIVE)
-    logger.error(
-        "blob_name debug -> type=%s len=%s value=%s",
-        type(blob_name).__name__,
-        len(str(blob_name)) if blob_name is not None else None,
-        repr(blob_name),
-    )
+    
     return container.get_blob_client(blob_name).url
 
 

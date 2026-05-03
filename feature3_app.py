@@ -15,6 +15,7 @@ from shared.workspace import Workspace, WorkspaceState
 
 from Features.Feature1_create_db.models import DatabaseSchema
 from Features.Feature3_chat_db import run_feature_3
+from Features.Feature3_chat_db.observability.tracing import NodeTracer
 
 logger = logging.getLogger(__name__)
 
@@ -315,7 +316,10 @@ def _submit_query(ws: Workspace, user_query: str) -> None:
 def _run_pipeline(ws: Workspace, spinner_msg: str = "Running...") -> Workspace | None:
     try:
         with st.spinner(spinner_msg):
-            updated_ws = run_feature_3(ws)
+            # Record a high-level trace for the Feature 3 pipeline execution
+            with NodeTracer(ws.__dict__, node_name="feature3_pipeline", input_fields=["db_conn_url", "db_blob_name", "history"]) as tracer:
+                updated_ws = run_feature_3(ws)
+                tracer.set_output({"has_result": bool(getattr(updated_ws, "feature3_data", None))})
         return updated_ws
     except Exception as exc:
         st.error(f"Query failed: {exc}")
@@ -386,14 +390,13 @@ Approval required before executing this query because it may modify data.
     with approve_col:
         if st.button("Approve & Execute", type="primary", use_container_width=True):
             ws.approval_status = "approved"
-            with st.spinner("Executing query..."):
-                try:
-                    updated_ws = run_feature_3(ws)
-                    _save(updated_ws)
-                    st.rerun()
-                except Exception as exc:
-                    st.error(f"Execution failed: {exc}")
-                    logger.exception("Feature 3 approval execution failed")
+            # Reuse _run_pipeline which includes tracing and error handling
+            updated_ws = _run_pipeline(ws, "Executing query...")
+            if updated_ws is not None:
+                _save(updated_ws)
+                st.rerun()
+            else:
+                st.error("Execution failed, see logs for details.")
     with cancel_col:
         if st.button("Cancel Query", use_container_width=True):
             history = list(ws.history)

@@ -1,7 +1,6 @@
 """
 Project-wide configuration.
 """
-
 from __future__ import annotations
 
 from typing import Any
@@ -29,7 +28,7 @@ class Settings(BaseSettings):
     )
     azure_openai_api_key: str = Field(
         default="",
-        validation_alias=AliasChoices("AZURE_OPENAI_API_KEY", "AZURE_API_KEY"),
+        validation_alias=AliasChoices("AZURE_OPENAI_API_KEY"),
     )
     azure_openai_api_version: str = Field(
         default="2024-05-01-preview",
@@ -38,14 +37,12 @@ class Settings(BaseSettings):
     azure_chat_deployment: str = Field(
         default="gpt-4.1-mini",
         validation_alias=AliasChoices(
-            "AZURE_CHAT_DEPLOYMENT",
             "AZURE_OPENAI_DEPLOYMENT",
         ),
     )
     azure_embedding_deployment: str = Field(
         default="text-embedding-3-small",
         validation_alias=AliasChoices(
-            "AZURE_EMBEDDING_DEPLOYMENT",
             "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
         ),
     )
@@ -55,8 +52,7 @@ class Settings(BaseSettings):
         default="",
         validation_alias=AliasChoices(
             "AZURE_STORAGE_CONNECTION_STRING",
-            "AZURE_CONN_STR",
-            "CONNECTION_STRING",
+            
         ),
     )
     azure_storage_account_name: str = Field(
@@ -112,12 +108,6 @@ class Settings(BaseSettings):
     no_of_samples: int = Field(default=7, validation_alias=AliasChoices("NO_OF_SAMPLES"))
     require_human_approval: bool = Field(default=False, validation_alias=AliasChoices("REQUIRE_HUMAN_APPROVAL"))
 
-    # Observability
-    langsmith_tracing: bool = Field(default=False, validation_alias=AliasChoices("LANGSMITH_TRACING"))
-    langsmith_endpoint: str = Field(default="", validation_alias=AliasChoices("LANGSMITH_ENDPOINT"))
-    langsmith_api_key: str = Field(default="", validation_alias=AliasChoices("LANGSMITH_API_KEY"))
-    langsmith_project: str = Field(default="", validation_alias=AliasChoices("LANGSMITH_PROJECT"))
-
     @property
     def resolved_blob_container_backups(self) -> str:
         return self.blob_container_backups or f"{self.blob_container_active}-backups"
@@ -125,7 +115,7 @@ class Settings(BaseSettings):
     def missing_openai_settings(self) -> list[str]:
         missing = []
         if not self.azure_openai_api_key:
-            missing.append("AZURE_OPENAI_API_KEY or AZURE_API_KEY")
+            missing.append("AZURE_OPENAI_API_KEY")
         if not self.azure_openai_endpoint:
             missing.append("AZURE_OPENAI_ENDPOINT")
         return missing
@@ -158,8 +148,6 @@ AZURE_OPENAI_ENDPOINT = settings.azure_openai_endpoint
 AZURE_OPENAI_API_VERSION = settings.azure_openai_api_version
 AZURE_OPENAI_DEPLOYMENT = settings.azure_chat_deployment
 AZURE_OPENAI_EMBEDDING_DEPLOYMENT = settings.azure_embedding_deployment
-AZURE_EMBEDDING_DEPLOYMENT = settings.azure_embedding_deployment
-AZURE_CHAT_DEPLOYMENT = settings.azure_chat_deployment
 
 AZURE_STORAGE_CONNECTION_STRING = settings.azure_storage_connection_string
 AZURE_STORAGE_ACCOUNT_NAME = settings.azure_storage_account_name
@@ -229,8 +217,6 @@ def validate_required_settings() -> dict[str, list[str]]:
 __all__ = [
     "AZURE_BLOB_SAS_TOKEN",
     "AZURE_BLOB_SAS_URL",
-    "AZURE_CHAT_DEPLOYMENT",
-    "AZURE_EMBEDDING_DEPLOYMENT",
     "AZURE_OPENAI_API_KEY",
     "AZURE_OPENAI_API_VERSION",
     "AZURE_OPENAI_DEPLOYMENT",
