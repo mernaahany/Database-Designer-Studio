@@ -26,10 +26,8 @@ Your task: determine if the plan is APPROVED or needs REVISION.
 Check for:
 - Correctness: Does the SQL actually implement what the user asked?
 - Completeness: Are all parts of the request covered?
-- Safety: Could this accidentally destroy data not intended to be deleted?
 - Compatibility: Is the SQL valid SQLite syntax and schema-consistent?
-- Foreign key integrity: Are FK references to existing columns?
-- Edge cases: Empty tables, NULL values, cascades, etc.
+
 
 Respond ONLY with valid JSON:
 {
@@ -38,7 +36,6 @@ Respond ONLY with valid JSON:
   "feedback": "Detailed instructions for the modifier to fix the plan (empty if approved)",
   "confidence": "high | medium | low"
 }"""
-
 
 def run_validator(state: GraphState) -> dict:
     """

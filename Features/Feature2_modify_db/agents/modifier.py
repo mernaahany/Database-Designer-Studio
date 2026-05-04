@@ -76,7 +76,6 @@ def _repair_and_parse_json(raw: str) -> dict | None:
 
 
 
-
 _SYSTEM_PROMPT = """You are an expert database engineer tasked with generating precise, safe SQLite modification plans.
  
 You will receive:
@@ -150,7 +149,6 @@ TABLE MIGRATION RULES (CREATE new + copy data + DROP old + RENAME):
     6. ALTER TABLE <new_table> RENAME TO <old_table>;
     7. CREATE VIEW <dependent_view> AS ...;  (one per dropped view, updated SQL)
     8. PRAGMA foreign_keys = ON;"""
-
 
 def run_modifier(state: GraphState) -> dict:
     """
